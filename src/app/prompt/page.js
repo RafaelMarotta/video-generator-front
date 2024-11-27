@@ -1,24 +1,29 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { requestOpenAI } from '@/services/openaiService';
 
 export default function PromptPage() {
-  
   const [subject, setSubject] = useState('');
   const [numQuestions, setNumQuestions] = useState(1);
   const [quizJson, setQuizJson] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [showForm, setShowForm] = useState(true); // Para ocultar o formulário
+  const [showForm, setShowForm] = useState(true);
+  const [darkMode, setDarkMode] = useState(false); // Estado para o Dark Mode
 
   const router = useRouter();
-  
+
+  // Detectar a preferência de Dark Mode do navegador
+  useEffect(() => {
+    const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    setDarkMode(prefersDarkMode);
+  }, []);
+
   const generatePrompt = () => {
     return `
     Você é um gerador de quizzes. Sua tarefa é criar um quiz JSON no seguinte formato:
-    
     {
       "questions": [
         {
@@ -54,7 +59,7 @@ export default function PromptPage() {
   const handleGenerateQuiz = async () => {
     setLoading(true);
     setError(null);
-    setShowForm(false); // Oculta o formulário ao gerar o quiz
+    setShowForm(false);
     try {
       const prompt = generatePrompt();
       const response = await requestOpenAI(prompt);
@@ -87,14 +92,22 @@ export default function PromptPage() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h1 className="text-2xl font-bold text-center mb-6">Gerador de Quiz</h1>
+    <div className={`${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-900'} flex flex-col items-center justify-center min-h-screen`}>
+      <div className={`${darkMode ? 'bg-gray-800 text-gray-200' : 'bg-white text-gray-700'} p-8 rounded-lg shadow-md w-full max-w-md`}>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold text-center">Gerador de Quiz</h1>
+          <button
+            onClick={() => setDarkMode(!darkMode)}
+            className="bg-gray-500 text-white p-2 rounded-md hover:bg-gray-600 transition-colors duration-200"
+          >
+            {darkMode ? 'Modo Claro' : 'Modo Escuro'}
+          </button>
+        </div>
 
         {showForm && (
           <>
             <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="subject">
+              <label className="block text-sm font-bold mb-2" htmlFor="subject">
                 Tema do Quiz:
               </label>
               <input
@@ -102,13 +115,13 @@ export default function PromptPage() {
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
                 type="text"
-                className="block w-full mt-1 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`block w-full mt-1 p-3 border ${darkMode ? 'border-gray-600 bg-gray-700 text-gray-200' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500`}
                 placeholder="Digite o tema do quiz"
               />
             </div>
 
             <div className="mb-6">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="numQuestions">
+              <label className="block text-sm font-bold mb-2" htmlFor="numQuestions">
                 Número de Questões:
               </label>
               <input
@@ -118,7 +131,7 @@ export default function PromptPage() {
                 type="number"
                 min="1"
                 max="5"
-                className="block w-full mt-1 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`block w-full mt-1 p-3 border ${darkMode ? 'border-gray-600 bg-gray-700 text-gray-200' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500`}
               />
             </div>
           </>
@@ -137,8 +150,8 @@ export default function PromptPage() {
         {quizJson && (
           <div>
             <div
-              className="bg-gray-100 p-4 rounded-md mt-6 overflow-y-auto"
-              style={{ maxHeight: '200px' }} // JSON rolável
+              className={`p-4 rounded-md mt-6 overflow-y-auto ${darkMode ? 'bg-gray-700 text-gray-200' : 'bg-gray-100 text-gray-900'}`}
+              style={{ maxHeight: '200px' }}
             >
               <h2 className="text-xl font-bold mb-2">Quiz Gerado:</h2>
               <pre className="text-sm whitespace-pre-wrap">{quizJson}</pre>
