@@ -6,7 +6,7 @@ import { requestOpenAI } from '@/services/openaiService';
 
 export default function PromptPage() {
   const [subject, setSubject] = useState('');
-  const [numQuestions, setNumQuestions] = useState(1);
+  const numQuestions = 1;
   const [quizJson, setQuizJson] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -111,21 +111,6 @@ export default function PromptPage() {
                 type="text"
                 className={`block w-full mt-1 p-3 border ${darkMode ? 'border-gray-600 bg-gray-700 text-gray-200' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500`}
                 placeholder="Digite o tema do quiz"
-              />
-            </div>
-
-            <div className="mb-6">
-              <label className="block text-sm font-bold mb-2" htmlFor="numQuestions">
-                Número de Questões:
-              </label>
-              <input
-                id="numQuestions"
-                value={numQuestions}
-                onChange={(e) => setNumQuestions(e.target.value)}
-                type="number"
-                min="1"
-                max="2"
-                className={`block w-full mt-1 p-3 border ${darkMode ? 'border-gray-600 bg-gray-700 text-gray-200' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500`}
               />
             </div>
           </>
