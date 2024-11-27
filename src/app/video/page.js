@@ -1,9 +1,7 @@
-// app/video/page.js
-
 import GenerateVideoClient from './GenerateVideoClient';
 
-export default function GenerateVideoPage({ searchParams }) {
-  const quizJson = searchParams.quiz;
+export default async function GenerateVideoPage({ searchParams }) {
+  const quizJson = await searchParams.quiz;
 
   return <GenerateVideoClient quizJson={quizJson} />;
 }
