@@ -19,3 +19,13 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #1a202c; /* Um cinza escuro confortável */
+    color: #ffffff; /* Texto branco */
+  }
+  .btn {
+    background-color: #2d3748; /* Botões mais escuros */
+  }
+}
