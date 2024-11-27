@@ -124,7 +124,7 @@ export default function PromptPage() {
                 onChange={(e) => setNumQuestions(e.target.value)}
                 type="number"
                 min="1"
-                max="5"
+                max="2"
                 className={`block w-full mt-1 p-3 border ${darkMode ? 'border-gray-600 bg-gray-700 text-gray-200' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500`}
               />
             </div>
