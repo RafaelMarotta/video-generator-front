@@ -1,4 +1,3 @@
-// app/video/GenerateVideoClient.js
 'use client';
 
 import { useState } from 'react';
@@ -14,14 +13,23 @@ export default function GenerateVideoClient({ quizJson }) {
   const router = useRouter();
 
   const handleGenerateVideo = async () => {
-    if (!quizJson) return;
+    if (!quizJson) {
+      setError('Quiz não encontrado. Por favor, forneça as informações do quiz.');
+      return;
+    }
 
     setLoading(true);
     setError(null);
     setVideoUrl(null);
 
     try {
-      const requestData = JSON.parse(quizJson);
+      let requestData;
+      try {
+        requestData = JSON.parse(quizJson);
+      } catch (parseError) {
+        throw new Error('Erro ao processar os dados do quiz. Verifique o formato do JSON.');
+      }
+
       const blob = await requestGenerateVideo(requestData);
       const url = URL.createObjectURL(blob);
       setVideoUrl(url);
