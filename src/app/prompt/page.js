@@ -96,12 +96,6 @@ export default function PromptPage() {
       <div className={`${darkMode ? 'bg-gray-800 text-gray-200' : 'bg-white text-gray-700'} p-8 rounded-lg shadow-md w-full max-w-md`}>
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-center">Gerador de Quiz</h1>
-          <button
-            onClick={() => setDarkMode(!darkMode)}
-            className="bg-gray-500 text-white p-2 rounded-md hover:bg-gray-600 transition-colors duration-200"
-          >
-            {darkMode ? 'Modo Claro' : 'Modo Escuro'}
-          </button>
         </div>
 
         {showForm && (
