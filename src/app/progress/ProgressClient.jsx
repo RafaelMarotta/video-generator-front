@@ -12,43 +12,62 @@ export default function ProgressClient() {
   const [rawLogs, setRawLogs] = useState([])
   const [progressPercent, setProgressPercent] = useState(0)
 
+  const videoUrl = `/api/video-file/${id}`
+
   useEffect(() => {
     if (!id) return
 
-    const events = new EventSource(`/api/stream/${id}`)
-
-    events.onmessage = (event) => {
-      try {
-        const parsed = JSON.parse(event.data)
-
-        if (parsed.event === 'video_ready') {
-          console.log('🎉 Vídeo pronto!')
+    // Primeiro: verifica se o vídeo já existe
+    fetch(videoUrl, { method: 'HEAD' })
+      .then(res => {
+        if (res.ok) {
           setVideoReady(true)
-          events.close()
-        } else if (parsed.event === 'export_progress') {
-          const progress = Math.round(parsed.progress || 0)
-          setProgressPercent(progress)
         } else {
-          setExecuted(parsed.executed || [])
-          setRunning(parsed.running || [])
+          iniciarSSE()
         }
+      })
+      .catch(() => iniciarSSE()) // fallback para o SSE caso HEAD falhe
 
-        setRawLogs(prev => [...prev, parsed])
+    function iniciarSSE() {
+      const events = new EventSource(`/api/stream/${id}`)
 
-      } catch (e) {
-        console.warn('⚠️ Mensagem inválida recebida:', event.data)
+      events.onmessage = (event) => {
+        try {
+          const parsed = JSON.parse(event.data)
+
+          if (parsed.event === 'video_ready') {
+            console.log('🎉 Vídeo pronto!')
+            setVideoReady(true)
+            events.close()
+          } else if (parsed.event === 'export_progress') {
+            const progress = Math.round(parsed.progress || 0)
+            setProgressPercent(progress)
+          } else {
+            setExecuted(parsed.executed || [])
+            setRunning(parsed.running || [])
+          }
+
+          setRawLogs(prev => [...prev, parsed])
+        } catch (e) {
+          console.warn('⚠️ Mensagem inválida recebida:', event.data)
+        }
       }
+
+      events.onerror = () => {
+        console.warn('⚠️ Erro no SSE, encerrando conexão.')
+        events.close()
+      }
+
+      return () => events.close()
     }
-
-    return () => events.close()
   }, [id])
-
-  const videoUrl = `/api/video-file/${id}`
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-6">
       <div className="w-full max-w-2xl bg-white p-6 rounded shadow">
-        <h1 className="text-xl font-semibold mb-4 text-center">⏳ Progresso da Geração</h1>
+        {!videoReady && (
+          <h1 className="text-xl font-semibold mb-4 text-center">⏳ Progresso da Geração</h1>
+        )}
 
         {!videoReady && (
           <>
