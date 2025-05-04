@@ -1,7 +1,9 @@
+import { INTERNAL_API_URL } from '@/lib/config'
+
 export async function GET(_, { params }) {
     const { id } = params
   
-    const res = await fetch(`http://localhost:8000/videos/stream/${id}`, {
+    const res = await fetch(`${INTERNAL_API_URL}/videos/stream/${id}`, {
       headers: {
         'Accept': 'text/event-stream',
       }
