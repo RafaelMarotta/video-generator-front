@@ -15,7 +15,7 @@ export default function ProgressClient() {
   useEffect(() => {
     if (!id) return
 
-    const events = new EventSource(`http://localhost:8000/videos/stream/${id}`)
+    const events = new EventSource(`/api/stream/${id}`)
 
     events.onmessage = (event) => {
       try {
@@ -43,7 +43,7 @@ export default function ProgressClient() {
     return () => events.close()
   }, [id])
 
-  const videoUrl = `http://localhost:8000/videos/file/${id}`
+  const videoUrl = `/api/video-file/${id}`
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-6">
@@ -98,7 +98,6 @@ export default function ProgressClient() {
             </video>
           </div>
         )}
-
       </div>
     </main>
   )

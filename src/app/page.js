@@ -11,7 +11,7 @@ export default function Home() {
   const router = useRouter()
 
   useEffect(() => {
-    fetch(`http://localhost:8000/pipelines`)
+    fetch(`/api/pipelines`)
       .then(res => res.json())
       .then(setPipelines)
   }, [])
@@ -24,7 +24,7 @@ export default function Home() {
   }
 
   const handleSubmit = async () => {
-      const res = await fetch(`http://localhost:8000/videos`, {
+    const res = await fetch(`/api/videos`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ pipeline: selected, text }),
