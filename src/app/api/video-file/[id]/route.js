@@ -13,10 +13,11 @@ export async function GET(request, context) {
     return new Response('Not Found', { status: 404 })
   }
 
+  const headers = new Headers(res.headers)
+  headers.set('Content-Type', 'video/mp4')
+  headers.set('Accept-Ranges', 'bytes')
+
   return new Response(res.body, {
-    headers: {
-      'Content-Type': 'video/mp4',
-      'Accept-Ranges': 'bytes'
-    }
+    headers
   })
 }
