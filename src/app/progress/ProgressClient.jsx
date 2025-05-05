@@ -18,7 +18,7 @@ export default function ProgressClient() {
     if (!id) return
 
     // Primeiro: verifica se o vídeo já existe
-    fetch(videoUrl, { method: 'HEAD' })
+    fetch(videoUrl, { method: 'GET' })
       .then(res => {
         if (res.ok) {
           setVideoReady(true)
@@ -30,9 +30,10 @@ export default function ProgressClient() {
 
     function iniciarSSE() {
       const events = new EventSource(`/api/stream/${id}`)
-
+      
       events.onmessage = (event) => {
         try {
+          console.log(event.data)
           const parsed = JSON.parse(event.data)
 
           if (parsed.event === 'video_ready') {
