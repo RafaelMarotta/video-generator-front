@@ -12,10 +12,11 @@ export async function GET(request, context) {
   if (res.status === 404) {
     return new Response('Not Found', { status: 404 })
   }
-  
+
   return new Response(res.body, {
     headers: {
-      'Content-Type': 'video/mp4'
+      'Content-Type': 'video/mp4',
+      'Accept-Ranges': 'bytes'
     }
   })
 }
