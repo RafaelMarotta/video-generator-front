@@ -8,6 +8,9 @@ export default function Home() {
   const [selected, setSelected] = useState('')
   const [text, setText] = useState('')
   const [description, setDescription] = useState('')
+  const [placeholder, setPlaceholder] = useState('')
+  const [numberLabel, setNumberLabel] = useState('')
+  const [n, setN] = useState(1)
   const router = useRouter()
 
   useEffect(() => {
@@ -19,15 +22,24 @@ export default function Home() {
   const handleSelect = (e) => {
     const name = e.target.value
     setSelected(name)
-    const desc = pipelines.find(p => p.name === name)?.description || ''
-    setDescription(desc)
+    const selectedPipeline = pipelines.find(p => p.name === name) || {}
+    setDescription(selectedPipeline.description || '')
+    setPlaceholder(selectedPipeline.placeholder || '')
+    setNumberLabel(selectedPipeline.numberLabel || '')
   }
 
   const handleSubmit = async () => {
+    const payload = { pipeline: selected, text }
+    if (numberLabel) {
+      payload.n = n
+    } else {
+      payload.n = 1
+    }
+
     const res = await fetch(`/api/videos`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pipeline: selected, text }),
+      body: JSON.stringify(payload),
     })
     const data = await res.json()
     router.push(`/progress?id=${data.code}`)
@@ -61,8 +73,22 @@ export default function Home() {
               value={text}
               onChange={e => setText(e.target.value)}
               className="w-full p-2 border rounded mb-4"
-              placeholder="Ex: Brasil"
+              placeholder={"Ex: " + placeholder}
             />
+
+            {numberLabel && (
+              <>
+                <label className="block mb-2">{numberLabel}:</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={5}
+                  value={n}
+                  onChange={e => setN(Number(e.target.value))}
+                  className="w-full p-2 border rounded mb-4"
+                />
+              </>
+            )}
 
             <button
               onClick={handleSubmit}

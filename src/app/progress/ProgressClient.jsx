@@ -1,11 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
+import { ArrowLeft } from 'lucide-react'
 
 export default function ProgressClient() {
   const searchParams = useSearchParams()
   const id = searchParams.get('id')
+  const router = useRouter()
   const [executed, setExecuted] = useState([])
   const [running, setRunning] = useState([])
   const [videoReady, setVideoReady] = useState(false)
@@ -17,7 +19,6 @@ export default function ProgressClient() {
   useEffect(() => {
     if (!id) return
 
-    // Primeiro: verifica se o vídeo já existe
     fetch(videoUrl, { method: 'GET' })
       .then(res => {
         if (res.ok) {
@@ -26,18 +27,16 @@ export default function ProgressClient() {
           iniciarSSE()
         }
       })
-      .catch(() => iniciarSSE()) // fallback para o SSE caso HEAD falhe
+      .catch(() => iniciarSSE())
 
     function iniciarSSE() {
       const events = new EventSource(`/api/stream/${id}`)
-      
+
       events.onmessage = (event) => {
         try {
-          console.log(event.data)
           const parsed = JSON.parse(event.data)
 
           if (parsed.event === 'video_ready') {
-            console.log('🎉 Vídeo pronto!')
             setVideoReady(true)
             events.close()
           } else if (parsed.event === 'export_progress') {
@@ -65,14 +64,23 @@ export default function ProgressClient() {
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-6">
-      <div className="w-full max-w-2xl bg-white p-6 rounded shadow">
+      <div className="w-full max-w-2xl bg-white p-6 rounded shadow relative">
+        {/* Botão de voltar */}
+        <button
+          onClick={() => router.back()}
+          className="absolute top-4 left-4 text-gray-600 hover:text-black flex items-center gap-1"
+        >
+          <ArrowLeft size={16} />
+          <span className="text-sm font-medium">Voltar</span>
+        </button>
+
         {!videoReady && (
           <h1 className="text-xl font-semibold mb-4 text-center">⏳ Progresso da Geração</h1>
         )}
 
         {!videoReady && (
           <>
-            <div className="mb-6">
+            <div className="mb-6 mt-10">
               <h2 className="text-md font-semibold mb-1">✅ Executados:</h2>
               <ul className="list-disc ml-6 text-sm text-green-700">
                 {executed.map((step, i) => (
@@ -106,16 +114,32 @@ export default function ProgressClient() {
         )}
 
         {videoReady && (
-          <div className="w-full text-center">
-            <h2 className="text-lg font-semibold mb-2">📽️ Vídeo gerado:</h2>
-            <video
-              className="rounded mx-auto"
-              style={{ maxHeight: '70vh' }}
-              controls
-            >
-              <source src={videoUrl} type="video/mp4" />
-              Seu navegador não suporta vídeo.
-            </video>
+          <div>
+            <div className="w-full text-center mt-10">
+              <h2 className="text-lg font-semibold mb-2">📽️ Vídeo gerado:</h2>
+              <video
+                className="rounded mx-auto"
+                style={{ maxHeight: '70vh' }}
+                controls
+              >
+                <source src={videoUrl} type="video/mp4" />
+                Seu navegador não suporta vídeo.
+              </video>
+            </div>
+            <div className="flex justify-between mt-10">
+              <button
+                onClick={() => router.push('/')}
+                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+              >
+                🎬 Gerar Vídeo
+              </button>
+              <button
+                onClick={() => alert('Abrir modal de avaliação (implementação futura)')}
+                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
+              >
+                ⭐ Avaliar Vídeo
+              </button>
+            </div>
           </div>
         )}
       </div>
