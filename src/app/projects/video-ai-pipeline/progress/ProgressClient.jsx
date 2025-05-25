@@ -19,7 +19,7 @@ export default function ProgressClient() {
     fetch(`/api/video-file/${id}`, { method: 'GET' })
       .then(res => {
         if (res.ok) {
-          router.push(`/videos?id=${id}`)
+          router.push(`/projects/video-ai-pipeline/videos?id=${id}`)
         } else {
           iniciarSSE()
         }
@@ -35,7 +35,7 @@ export default function ProgressClient() {
 
           if (parsed.event === 'video_ready') {
             events.close()
-            router.push(`/videos?id=${id}`)
+            router.push(`/projects/video-ai-pipeline/videos?id=${id}`)
           } else if (parsed.event === 'export_progress') {
             const progress = Math.round(parsed.progress || 0)
             setProgressPercent(progress)
@@ -60,8 +60,8 @@ export default function ProgressClient() {
   }, [id])
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-6">
-      <div className="w-full max-w-2xl bg-white p-6 rounded shadow relative">
+    <div className="w-full max-w-2xl mx-auto">
+      <div className="bg-white p-6 rounded-lg shadow relative">
         {/* Botão de voltar */}
         <button
           onClick={() => router.back()}
@@ -99,6 +99,6 @@ export default function ProgressClient() {
           )}
         </div>
       </div>
-    </main>
+    </div>
   )
-}
+} 

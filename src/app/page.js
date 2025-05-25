@@ -1,104 +1,60 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { Github, Linkedin, Mail } from 'lucide-react'
 
-export default function Home() {
-  const [pipelines, setPipelines] = useState([])
-  const [selected, setSelected] = useState('')
-  const [text, setText] = useState('')
-  const [description, setDescription] = useState('')
-  const [placeholder, setPlaceholder] = useState('')
-  const [numberLabel, setNumberLabel] = useState('')
-  const [n, setN] = useState(1)
-  const router = useRouter()
-
-  useEffect(() => {
-    fetch(`/api/pipelines`)
-      .then(res => res.json())
-      .then(setPipelines)
-  }, [])
-
-  const handleSelect = (e) => {
-    const name = e.target.value
-    setSelected(name)
-    const selectedPipeline = pipelines.find(p => p.name === name) || {}
-    setDescription(selectedPipeline.description || '')
-    setPlaceholder(selectedPipeline.placeholder || '')
-    setNumberLabel(selectedPipeline.numberLabel || '')
-  }
-
-  const handleSubmit = async () => {
-    const payload = { pipeline: selected, text }
-    if (numberLabel) {
-      payload.n = n
-    } else {
-      payload.n = 1
-    }
-
-    const res = await fetch(`/api/videos`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    })
-    const data = await res.json()
-    router.push(`/progress?id=${data.code}`)
-  }
-
+export default function HomePage() {
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-      <div className="w-full max-w-lg bg-white p-6 rounded shadow">
-        <h1 className="text-2xl font-bold mb-4">Gerador de Vídeos</h1>
+    <div className="flex min-h-screen flex-col items-center justify-center p-6">
+      <div className="max-w-2xl text-center">
+        <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          Rafael Marotta
+        </h1>
+        <p className="text-gray-600 mb-8 text-lg">
+          Desenvolvedor apaixonado por criar soluções inovadoras. Atualmente trabalhando no Mercado Livre,
+          focado em desenvolver sistemas escaláveis e de alta performance.
+        </p>
 
-        <label className="block mb-2">Escolha a pipeline:</label>
-        <select
-          className="w-full p-2 border rounded mb-4"
-          onChange={handleSelect}
-        >
-          <option value="">Selecione...</option>
-          {pipelines.map(p => (
-            <option key={p.name} value={p.name}>{p.name}</option>
-          ))}
-        </select>
+        <div className="flex justify-center gap-6 mb-8">
+          <a
+            href="https://github.com/RafaelMarotta"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            <Github className="w-6 h-6" />
+          </a>
+          <a
+            href="https://www.linkedin.com/in/rafael-marotta/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            <Linkedin className="w-6 h-6" />
+          </a>
+          <Link
+            href="/contact"
+            className="text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            <Mail className="w-6 h-6" />
+          </Link>
+        </div>
 
-        {selected && (
-          <>
-            <p className="mb-4 text-sm text-gray-700">
-              <strong>Descrição:</strong> {description}
-            </p>
-
-            <label className="block mb-2">Texto:</label>
-            <input
-              type="text"
-              value={text}
-              onChange={e => setText(e.target.value)}
-              className="w-full p-2 border rounded mb-4"
-              placeholder={"Ex: " + placeholder}
-            />
-
-            {numberLabel && (
-              <>
-                <label className="block mb-2">{numberLabel}:</label>
-                <input
-                  type="number"
-                  min={1}
-                  max={5}
-                  value={n}
-                  onChange={e => setN(Number(e.target.value))}
-                  className="w-full p-2 border rounded mb-4"
-                />
-              </>
-            )}
-
-            <button
-              onClick={handleSubmit}
-              className="w-full bg-black text-white py-2 rounded hover:bg-gray-800 transition"
-            >
-              Gerar Vídeo
-            </button>
-          </>
-        )}
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <Link
+            href="/about"
+            className="bg-white text-gray-800 px-6 py-3 rounded-lg hover:bg-gray-50 border border-gray-200 transition-colors"
+          >
+            Sobre Mim
+          </Link>
+          <Link
+            href="/projects"
+            className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg hover:opacity-90 transition-opacity"
+          >
+            Ver Projetos
+          </Link>
+        </div>
       </div>
-    </main>
+    </div>
   )
 }
