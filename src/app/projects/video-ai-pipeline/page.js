@@ -64,13 +64,7 @@ export default function VideoAIPipeline() {
   const router = useRouter()
 
   useEffect(() => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL
-    if (!apiUrl) {
-      console.error('API URL não configurada')
-      return
-    }
-
-    fetch(`${apiUrl}/pipelines`)
+    fetch('/api/pipelines')
       .then(res => res.json())
       .then(setPipelines)
   }, [])
@@ -95,24 +89,14 @@ export default function VideoAIPipeline() {
       return
     }
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL
-    if (!apiUrl) {
-      console.error('API URL não configurada')
-      return
-    }
-
     const payload = { 
       pipeline: selected, 
       text,
-      tone_prompt: selectedTone
-    }
-    if (numberLabel) {
-      payload.n = n
-    } else {
-      payload.n = 1
+      tone_prompt: selectedTone,
+      n: numberLabel ? n : 1
     }
 
-    const res = await fetch(`${apiUrl}/videos`, {
+    const res = await fetch('/api/videos', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
