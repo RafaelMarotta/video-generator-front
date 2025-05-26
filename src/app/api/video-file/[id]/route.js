@@ -4,8 +4,8 @@ export const dynamic = 'force-dynamic';
 
 import { INTERNAL_API_URL } from '@/lib/config'
 
-export async function GET(request, context) {
-  const { id } = context.params
+export async function GET(request, { params }) {
+  const id = await params.id
 
   const res = await fetch(`${INTERNAL_API_URL}/videos/file/${id}`)
 

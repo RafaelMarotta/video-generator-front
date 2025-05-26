@@ -17,32 +17,32 @@ function CustomSelect({ value, onChange, options, placeholder }) {
     <div className="relative">
       <button
         type="button"
-        className="w-full p-3 border rounded-lg pr-10 bg-white text-left flex items-center justify-between hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+        className="w-full p-3 border dark:border-gray-600 rounded-lg pr-10 bg-white dark:bg-gray-800 text-left flex items-center justify-between hover:border-gray-400 dark:hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <span className={value ? 'text-gray-900' : 'text-gray-500'}>
+        <span className={value ? 'text-gray-900 dark:text-gray-100' : 'text-gray-500 dark:text-gray-400'}>
           {selectedLabel || placeholder}
         </span>
-        <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${isOpen ? 'transform rotate-180' : ''}`} />
+        <ChevronDown className={`w-5 h-5 text-gray-400 dark:text-gray-500 transition-transform ${isOpen ? 'transform rotate-180' : ''}`} />
       </button>
       
       {isOpen && (
-        <div className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-60 overflow-auto">
+        <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-auto">
           {options.map((option) => (
             <button
               key={option.value}
               type="button"
-              className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center justify-between group"
+              className="w-full px-4 py-2 text-left hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center justify-between group"
               onClick={() => {
                 onChange(option.value)
                 setIsOpen(false)
               }}
             >
-              <span className={`${value === option.value ? 'text-purple-600 font-medium' : 'text-gray-700'}`}>
+              <span className={`${value === option.value ? 'text-purple-600 dark:text-purple-400 font-medium' : 'text-gray-700 dark:text-gray-300'}`}>
                 {option.label}
               </span>
               {value === option.value && (
-                <Check className="w-4 h-4 text-purple-600" />
+                <Check className="w-4 h-4 text-purple-600 dark:text-purple-400" />
               )}
             </button>
           ))}
@@ -64,7 +64,13 @@ export default function VideoAIPipeline() {
   const router = useRouter()
 
   useEffect(() => {
-    fetch(`/api/pipelines`)
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL
+    if (!apiUrl) {
+      console.error('API URL não configurada')
+      return
+    }
+
+    fetch(`${apiUrl}/pipelines`)
       .then(res => res.json())
       .then(setPipelines)
   }, [])
@@ -89,6 +95,12 @@ export default function VideoAIPipeline() {
       return
     }
 
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL
+    if (!apiUrl) {
+      console.error('API URL não configurada')
+      return
+    }
+
     const payload = { 
       pipeline: selected, 
       text,
@@ -100,7 +112,7 @@ export default function VideoAIPipeline() {
       payload.n = 1
     }
 
-    const res = await fetch(`/api/videos`, {
+    const res = await fetch(`${apiUrl}/videos`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -131,32 +143,32 @@ export default function VideoAIPipeline() {
   return (
     <div className="w-full max-w-3xl mx-auto">
       {/* Seção de Introdução */}
-      <div className="bg-white p-8 rounded-lg shadow mb-6">
+      <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow mb-6">
         <h1 className="text-3xl font-bold mb-4 text-center bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
           Pipeline de Geração de Vídeos com IA
         </h1>
-        <div className="space-y-4 text-gray-600">
+        <div className="space-y-4 text-gray-600 dark:text-gray-300">
           <p className="text-center mb-6">
             Transforme seus textos em vídeos profissionais com narração natural e conteúdo dinâmico.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="text-center p-4">
               <div className="text-2xl mb-2">🎯</div>
-              <h3 className="font-semibold mb-2">Personalizado</h3>
+              <h3 className="font-semibold mb-2 text-gray-900 dark:text-white">Personalizado</h3>
               <p className="text-sm">
                 Escolha entre diferentes estilos de vídeo e tons de voz para melhor atender sua necessidade
               </p>
             </div>
             <div className="text-center p-4">
               <div className="text-2xl mb-2">⚡</div>
-              <h3 className="font-semibold mb-2">Rápido</h3>
+              <h3 className="font-semibold mb-2 text-gray-900 dark:text-white">Rápido</h3>
               <p className="text-sm">
                 Gere vídeos em minutos, sem necessidade de conhecimento técnico ou equipamentos
               </p>
             </div>
             <div className="text-center p-4">
               <div className="text-2xl mb-2">🎨</div>
-              <h3 className="font-semibold mb-2">Profissional</h3>
+              <h3 className="font-semibold mb-2 text-gray-900 dark:text-white">Profissional</h3>
               <p className="text-sm">
                 Resultado com qualidade profissional, pronto para compartilhar em suas redes sociais
               </p>
@@ -166,18 +178,18 @@ export default function VideoAIPipeline() {
       </div>
 
       {/* Formulário de Geração */}
-      <div className="bg-white p-6 rounded-lg shadow">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
         <div className="flex items-center justify-center gap-2 mb-8">
           <Wand2 className="w-6 h-6 text-purple-500" />
-          <h2 className="text-xl font-semibold">Criar Novo Vídeo</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Criar Novo Vídeo</h2>
         </div>
 
-        <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-6">
+        <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800 rounded-lg p-4 mb-6">
           <div className="flex items-start gap-3">
-            <Info className="w-5 h-5 text-blue-500 mt-0.5" />
+            <Info className="w-5 h-5 text-blue-500 dark:text-blue-400 mt-0.5" />
             <div>
-              <h3 className="font-medium text-blue-900 mb-1">O que são pipelines?</h3>
-              <p className="text-sm text-blue-700">
+              <h3 className="font-medium text-blue-900 dark:text-blue-200 mb-1">O que são pipelines?</h3>
+              <p className="text-sm text-blue-700 dark:text-blue-300">
                 Pipelines são modelos pré-configurados de geração de vídeo. Cada pipeline tem seu próprio estilo, formato e propósito específico. 
                 Escolha a que melhor se adequa ao tipo de vídeo que você deseja criar.
               </p>
@@ -187,7 +199,7 @@ export default function VideoAIPipeline() {
 
         <div className="space-y-6">
           <div>
-            <label className="flex items-center gap-2 text-gray-700 mb-2">
+            <label className="flex items-center gap-2 text-gray-700 dark:text-gray-300 mb-2">
               <Video className="w-5 h-5" />
               <span>Escolha a pipeline:</span>
             </label>
@@ -201,14 +213,14 @@ export default function VideoAIPipeline() {
 
           {selected && (
             <>
-              <div className="bg-gray-50 border border-gray-100 rounded p-4 mb-4">
-                <p className="text-sm text-gray-700">
-                  <strong>Descrição:</strong> {description}
+              <div className="bg-gray-50 dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded p-4 mb-4">
+                <p className="text-sm text-gray-700 dark:text-gray-300">
+                  <strong className="text-gray-900 dark:text-white">Descrição:</strong> {description}
                 </p>
               </div>
 
               <div>
-                <label className="flex items-center gap-2 text-gray-700 mb-2">
+                <label className="flex items-center gap-2 text-gray-700 dark:text-gray-300 mb-2">
                   <Type className="w-5 h-5" />
                   <span>Texto:</span>
                 </label>
@@ -216,14 +228,14 @@ export default function VideoAIPipeline() {
                   type="text"
                   value={text}
                   onChange={e => setText(e.target.value)}
-                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                  className="w-full p-3 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
                   placeholder={"Ex: " + placeholder}
                 />
               </div>
 
               {numberLabel && (
                 <div>
-                  <label className="flex items-center gap-2 text-gray-700 mb-2">
+                  <label className="flex items-center gap-2 text-gray-700 dark:text-gray-300 mb-2">
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
                     </svg>
@@ -238,13 +250,13 @@ export default function VideoAIPipeline() {
                     onBlur={() => {
                       setN(Math.min(Math.max(n, 1), 5))
                     }}
-                    className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                    className="w-full p-3 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
                   />
                 </div>
               )}
 
               <div>
-                <label className="flex items-center gap-2 text-gray-700 mb-2">
+                <label className="flex items-center gap-2 text-gray-700 dark:text-gray-300 mb-2">
                   <Volume2 className="w-5 h-5" />
                   <span>Tom do vídeo:</span>
                 </label>
@@ -254,7 +266,7 @@ export default function VideoAIPipeline() {
                   options={toneOptions}
                   placeholder="Escolha o tom do seu vídeo"
                 />
-                <p className="text-sm text-gray-600 mt-2">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
                   Escolha a personalidade que vai conduzir seu vídeo
                 </p>
               </div>

@@ -61,25 +61,16 @@ export default function ProgressClient() {
 
   return (
     <div className="w-full max-w-2xl mx-auto">
-      <div className="bg-white p-6 rounded-lg shadow relative">
-        {/* Botão de voltar */}
-        <button
-          onClick={() => router.back()}
-          className="absolute top-4 left-4 text-gray-600 hover:text-black flex items-center gap-1"
-        >
-          <ArrowLeft size={16} />
-          <span className="text-sm font-medium">Voltar</span>
-        </button>
-
-        <h1 className="text-xl font-semibold mb-4 text-center">⏳ Progresso da Geração</h1>
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow relative">
+        <h1 className="text-xl font-semibold mb-4 text-center text-gray-900 dark:text-white">⏳ Progresso da Geração</h1>
 
         <div className="flex flex-col items-center justify-center py-10">
           {/* Loading Spinner */}
-          <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin mb-4"></div>
+          <div className="w-12 h-12 border-4 border-gray-200 dark:border-gray-600 border-t-blue-500 dark:border-t-blue-400 rounded-full animate-spin mb-4"></div>
           
           {/* Current Step Label */}
           {running.length > 0 && (
-            <p className="text-center text-gray-700">
+            <p className="text-center text-gray-700 dark:text-gray-300">
               {running[0].description}
             </p>
           )}
@@ -87,14 +78,14 @@ export default function ProgressClient() {
           {/* Export Progress Bar */}
           {progressPercent > 0 && (
             <div className="w-full max-w-md mt-8">
-              <h2 className="text-md font-semibold mb-1">📦 Exportando vídeo:</h2>
-              <div className="w-full h-4 bg-gray-200 rounded overflow-hidden">
+              <h2 className="text-md font-semibold mb-1 text-gray-900 dark:text-white">📦 Exportando vídeo:</h2>
+              <div className="w-full h-4 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden">
                 <div
-                  className="h-full bg-blue-500 transition-all duration-200"
+                  className="h-full bg-blue-500 dark:bg-blue-400 transition-all duration-200"
                   style={{ width: `${progressPercent}%` }}
                 />
               </div>
-              <p className="text-sm text-gray-600 mt-1">{progressPercent}% concluído</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{progressPercent}% concluído</p>
             </div>
           )}
         </div>
