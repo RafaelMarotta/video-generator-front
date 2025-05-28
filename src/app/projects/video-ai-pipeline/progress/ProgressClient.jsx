@@ -16,9 +16,10 @@ export default function ProgressClient() {
   useEffect(() => {
     if (!id) return
 
-    fetch(`/api/video-file/${id}`, { method: 'GET' })
+    fetch(`/api/videos/${id}`, { method: 'GET' })
+      .then(res => res.json())
       .then(res => {
-        if (res.ok) {
+        if (res.status == "completed") {
           router.push(`/projects/video-ai-pipeline/videos?id=${id}`)
         } else {
           iniciarSSE()
