@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Video, Type, Volume2, Info, Wand2, ChevronDown, Check } from 'lucide-react'
 
@@ -61,6 +61,7 @@ export default function VideoAIPipeline() {
   const [numberLabel, setNumberLabel] = useState('')
   const [n, setN] = useState(1)
   const [selectedTone, setSelectedTone] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -84,29 +85,42 @@ export default function VideoAIPipeline() {
   }
 
   const handleSubmit = async () => {
+    if (isSubmitting) return
     if (!selectedTone) {
       alert('Por favor, selecione um tom para o vídeo')
       return
     }
 
-    const payload = { 
-      pipeline: selected, 
-      text,
-      tone_prompt: selectedTone
-    }
-    if (numberLabel) {
-      payload.n = n
-    } else {
-      payload.n = 1
-    }
+    setIsSubmitting(true)
 
-    const res = await fetch(`/api/videos`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    })
-    const data = await res.json()
-    router.push(`/projects/video-ai-pipeline/progress?id=${data.code}`)
+    try {
+      const payload = { 
+        pipeline: selected, 
+        text,
+        tone_prompt: selectedTone
+      }
+      if (numberLabel) {
+        payload.n = n
+      } else {
+        payload.n = 1
+      }
+
+      const res = await fetch(`/api/videos`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      const data = await res.json()
+      router.push(`/projects/video-ai-pipeline/progress?id=${data.code}`)
+    } catch (error) {
+      console.error('Erro ao gerar vídeo:', error)
+      alert('Ocorreu um erro ao gerar o vídeo. Por favor, tente novamente.')
+    } finally {
+      // Adiciona um delay de 2 segundos antes de permitir novo clique
+      setTimeout(() => {
+        setIsSubmitting(false)
+      }, 2000)
+    }
   }
 
   const handleNumberChange = (e) => {
@@ -261,10 +275,15 @@ export default function VideoAIPipeline() {
 
               <button
                 onClick={handleSubmit}
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg hover:opacity-90 transition flex items-center justify-center gap-2 mt-8"
+                disabled={isSubmitting}
+                className={`w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg transition flex items-center justify-center gap-2 mt-8 ${
+                  isSubmitting 
+                    ? 'opacity-50 cursor-not-allowed' 
+                    : 'hover:opacity-90'
+                }`}
               >
                 <Wand2 className="w-5 h-5" />
-                <span>Gerar Vídeo</span>
+                <span>{isSubmitting ? 'Gerando...' : 'Gerar Vídeo'}</span>
               </button>
             </>
           )}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 
@@ -12,6 +12,10 @@ export default function ProgressClient() {
   const [running, setRunning] = useState([])
   const [progressPercent, setProgressPercent] = useState(0)
   const [rawLogs, setRawLogs] = useState([])
+  const eventsRef = useRef(null)
+  const reconnectTimeoutRef = useRef(null)
+  const lastMessageTimeRef = useRef(Date.now())
+  const inactivityTimeoutRef = useRef(null)
 
   useEffect(() => {
     if (!id) return
@@ -28,10 +32,34 @@ export default function ProgressClient() {
       .catch(() => iniciarSSE())
 
     function iniciarSSE() {
+      if (eventsRef.current) {
+        eventsRef.current.close()
+      }
+
       const events = new EventSource(`/api/stream/${id}`)
+      eventsRef.current = events
+      lastMessageTimeRef.current = Date.now()
+
+      // Configura o timeout de inatividade
+      if (inactivityTimeoutRef.current) {
+        clearInterval(inactivityTimeoutRef.current)
+      }
+
+      inactivityTimeoutRef.current = setInterval(() => {
+        const now = Date.now()
+        const timeSinceLastMessage = now - lastMessageTimeRef.current
+
+        // Se não receber mensagem por 4 segundos, tenta reconectar
+        if (timeSinceLastMessage > 4000) {
+          console.warn('⚠️ Sem mensagens por 4 segundos, tentando reconectar...')
+          events.close()
+          iniciarSSE()
+        }
+      }, 2000) // Verifica a cada 2 segundos
 
       events.onmessage = (event) => {
         try {
+          lastMessageTimeRef.current = Date.now()
           const parsed = JSON.parse(event.data)
 
           if (parsed.event === 'video_ready') {
@@ -52,11 +80,43 @@ export default function ProgressClient() {
       }
 
       events.onerror = () => {
-        console.warn('⚠️ Erro no SSE, encerrando conexão.')
+        console.warn('⚠️ Erro no SSE, tentando reconectar...')
         events.close()
+        
+        // Limpa qualquer timeout de reconexão pendente
+        if (reconnectTimeoutRef.current) {
+          clearTimeout(reconnectTimeoutRef.current)
+        }
+
+        // Tenta reconectar após 3 segundos
+        reconnectTimeoutRef.current = setTimeout(() => {
+          iniciarSSE()
+        }, 3000)
       }
 
-      return () => events.close()
+      return () => {
+        if (eventsRef.current) {
+          eventsRef.current.close()
+        }
+        if (reconnectTimeoutRef.current) {
+          clearTimeout(reconnectTimeoutRef.current)
+        }
+        if (inactivityTimeoutRef.current) {
+          clearInterval(inactivityTimeoutRef.current)
+        }
+      }
+    }
+
+    return () => {
+      if (eventsRef.current) {
+        eventsRef.current.close()
+      }
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current)
+      }
+      if (inactivityTimeoutRef.current) {
+        clearInterval(inactivityTimeoutRef.current)
+      }
     }
   }, [id])
 
