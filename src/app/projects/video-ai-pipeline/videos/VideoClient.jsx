@@ -151,7 +151,7 @@ export default function VideoClient() {
           <div className="mt-10">
             <h2 className="text-lg font-semibold mb-4 text-center">⭐ Avaliação do Vídeo</h2>
             <iframe
-              src="https://docs.google.com/forms/d/e/1FAIpQLSeEH1gNK008ud57wB0t-piCRMEuroIOGcD5_9Jzd0xqT8mJiQ/viewform?embedded=true"
+              src="https://docs.google.com/forms/d/e/1FAIpQLSebxvVkXru1k6Hbi9OJXPbVRxB4-EbU1fyhZMxvV3Khx7pIXg/viewform?embedded=true"
               width="100%"
               height="721"
               frameBorder="0"
