@@ -124,8 +124,18 @@ export default function VideoAIPipeline() {
   }
 
   const handleNumberChange = (e) => {
+    setN(e.target.value)
+  }
+
+  const handleNumberBlur = (e) => {
     const value = e.target.value === '' ? 1 : parseInt(e.target.value)
-    setN(value)
+    if (isNaN(value) || value < 1) {
+      setN(1)
+    } else if (value > 3) {
+      setN(3)
+    } else {
+      setN(value)
+    }
   }
 
   const pipelineOptions = [
@@ -244,10 +254,10 @@ export default function VideoAIPipeline() {
                   </label>
                   <input
                     type="number"
-                    min={1}
                     max={3}
                     value={n}
                     onChange={handleNumberChange}
+                    onBlur={handleNumberBlur}
                     className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
                   />
                 </div>
