@@ -125,7 +125,7 @@ export default function VideoAIPipeline() {
 
   const handleNumberChange = (e) => {
     const value = parseInt(e.target.value.replace(/^0+/, '')) || 1
-    const finalValue = Math.min(Math.max(value, 1), 5)
+    const finalValue = Math.min(Math.max(value, 1), 3)
     setN(finalValue)
   }
 
