@@ -124,9 +124,8 @@ export default function VideoAIPipeline() {
   }
 
   const handleNumberChange = (e) => {
-    const value = parseInt(e.target.value.replace(/^0+/, '')) || 1
-    const finalValue = Math.min(Math.max(value, 1), 3)
-    setN(finalValue)
+    const value = e.target.value === '' ? 1 : parseInt(e.target.value)
+    setN(value)
   }
 
   const pipelineOptions = [
