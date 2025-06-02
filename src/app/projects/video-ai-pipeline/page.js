@@ -246,11 +246,11 @@ export default function VideoAIPipeline() {
                   <input
                     type="number"
                     min={1}
-                    max={5}
+                    max={3}
                     value={n}
                     onChange={handleNumberChange}
                     onBlur={() => {
-                      setN(Math.min(Math.max(n, 1), 5))
+                      setN(Math.min(Math.max(n, 1), 3))
                     }}
                     className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
                   />
