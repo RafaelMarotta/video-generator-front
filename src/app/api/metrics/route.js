@@ -1,24 +1,11 @@
-import { NextResponse } from 'next/server';
+import { INTERNAL_API_URL } from '@/lib/config'
 
 export async function GET() {
-  try {
-    const response = await fetch(`${INTERNAL_API_URL}/videos/metrics`, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch metrics');
-    }
-
-    const data = await response.json();
-    return NextResponse.json(data);
-  } catch (error) {
-    console.error('Error fetching metrics:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch metrics' },
-      { status: 500 }
-    );
+  const res = await fetch(`${INTERNAL_API_URL}/videos/metrics`)
+  if (!res.ok) {
+    return Response.json({ error: 'Failed to fetch metrics' }, { status: res.status })
   }
-} 
+
+  const data = await res.json()
+  return Response.json(data)
+}
