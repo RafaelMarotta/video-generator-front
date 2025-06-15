@@ -160,18 +160,12 @@ export default function MetricsPage() {
     max: Math.max(...durations),
   }));
 
-  // Process memory and CPU metrics
+  // Process memory metrics
   const resourceMetrics = filteredMetrics.map(video => {
     const steps = video.steps || [];
     const totalMemory = steps.reduce((acc, step) => acc + (step.memory_diff_mb || 0), 0);
     const maxMemory = Math.max(...steps.map(step => step.memory_diff_mb || 0));
     const avgMemory = totalMemory / (steps.length || 1);
-    
-    // Filter out steps without timestamp for CPU calculation if it's a new metric
-    const cpuSteps = steps.filter(step => step.timestamp);
-    const totalCPU = cpuSteps.reduce((acc, step) => acc + (step.cpu_percent || 0), 0);
-    const maxCPU = Math.max(...cpuSteps.map(step => step.cpu_percent || 0));
-    const avgCPU = totalCPU / (cpuSteps.length || 1);
 
     const startTimestamp = video.steps?.[0]?.timestamp;
     const endTimestamp = video.steps?.[video.steps.length - 1]?.timestamp;
@@ -181,9 +175,6 @@ export default function MetricsPage() {
       totalMemory,
       maxMemory,
       avgMemory,
-      totalCPU,
-      maxCPU,
-      avgCPU,
       steps: steps.length,
       // Use timestamp if available, otherwise fallback to a default date (e.g., 1970 for older data)
       startTime: startTimestamp ? new Date(startTimestamp * 1000) : new Date(0),
@@ -221,10 +212,6 @@ export default function MetricsPage() {
             const v = validResourceMetrics.find(vm => vm.id === id);
             return sum + (v ? v.totalMemory : 0);
           }, 0),
-          totalCPU: Array.from(currentVideos).reduce((sum, id) => {
-            const v = validResourceMetrics.find(vm => vm.id === id);
-            return sum + (v ? v.totalCPU : 0);
-          }, 0),
         });
       }
     }
@@ -241,13 +228,11 @@ export default function MetricsPage() {
     // Create a dummy period for summary statistics if no true parallel periods are found
     // This will happen if all videos are sequential or have instant processing
     const totalMemory = validResourceMetrics.reduce((sum, v) => sum + v.totalMemory, 0);
-    const totalCPU = validResourceMetrics.reduce((sum, v) => sum + v.totalCPU, 0);
     parallelPeriods.push({
       start: validResourceMetrics[0].startTime,
       end: validResourceMetrics[validResourceMetrics.length - 1].endTime,
       videos: validResourceMetrics.map(v => v.id),
       totalMemory: totalMemory,
-      totalCPU: totalCPU,
     });
   }
 
@@ -339,7 +324,7 @@ export default function MetricsPage() {
 
             {/* Resource Usage Chart */}
             <div className="bg-white p-6 rounded-lg shadow">
-              <h2 className="text-xl font-semibold mb-4">Resource Usage per Video</h2>
+              <h2 className="text-xl font-semibold mb-4">Memory Usage per Video</h2>
               <Line
                 data={{
                   labels: resourceMetrics.map(m => m.id),
@@ -348,12 +333,6 @@ export default function MetricsPage() {
                       label: 'Memory (MB)',
                       data: resourceMetrics.map(m => m.totalMemory),
                       borderColor: 'rgb(75, 192, 192)',
-                      tension: 0.1,
-                    },
-                    {
-                      label: 'CPU (%)',
-                      data: resourceMetrics.map(m => m.totalCPU),
-                      borderColor: 'rgb(255, 99, 132)',
                       tension: 0.1,
                     }
                   ],
@@ -366,7 +345,7 @@ export default function MetricsPage() {
                     },
                     title: {
                       display: true,
-                      text: 'Resource Usage per Video',
+                      text: 'Memory Usage per Video',
                     },
                   },
                 }}
@@ -442,9 +421,7 @@ export default function MetricsPage() {
                         End: {period.end.toLocaleString()}<br />
                         Videos in parallel: {period.videos.length}<br />
                         Total memory used: {period.totalMemory.toFixed(2)} MB<br />
-                        Total CPU used: {period.totalCPU.toFixed(2)} %<br />
-                        Average memory per video: {(period.totalMemory / period.videos.length).toFixed(2)} MB<br />
-                        Average CPU per video: {(period.totalCPU / period.videos.length).toFixed(2)} %
+                        Average memory per video: {(period.totalMemory / period.videos.length).toFixed(2)} MB
                       </p>
                     </div>
                   ))
@@ -474,12 +451,6 @@ export default function MetricsPage() {
                   <p className="text-gray-600">Average Memory per Video</p>
                   <p className="text-2xl font-bold">
                     {(resourceMetrics.reduce((acc, m) => acc + m.totalMemory, 0) / resourceMetrics.length).toFixed(2)} MB
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-600">Average CPU per Video</p>
-                  <p className="text-2xl font-bold">
-                    {(resourceMetrics.reduce((acc, m) => acc + m.totalCPU, 0) / resourceMetrics.length).toFixed(2)} %
                   </p>
                 </div>
                 <div>
