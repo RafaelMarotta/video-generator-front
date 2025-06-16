@@ -16,6 +16,24 @@ import {
   ScatterController,
 } from 'chart.js';
 import 'chartjs-adapter-date-fns';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 ChartJS.register(
   CategoryScale,
@@ -30,11 +48,15 @@ ChartJS.register(
   ScatterController,
 );
 
+const ITEMS_PER_PAGE = 10;
+
 export default function MetricsPage() {
   const [metrics, setMetrics] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [metricsVersion, setMetricsVersion] = useState("2.0");
+  const [stepAnalysisPage, setStepAnalysisPage] = useState(1);
+  const [parallelProcessingPage, setParallelProcessingPage] = useState(1);
 
   useEffect(() => {
     const fetchMetrics = async () => {
@@ -271,6 +293,18 @@ export default function MetricsPage() {
     })
     .filter(Boolean); // Remove null entries
 
+  // Calculate pagination for step analysis
+  const stepAnalysisStart = (stepAnalysisPage - 1) * ITEMS_PER_PAGE;
+  const stepAnalysisEnd = stepAnalysisStart + ITEMS_PER_PAGE;
+  const paginatedStepAnalysis = averageDurations.slice(stepAnalysisStart, stepAnalysisEnd);
+  const totalStepAnalysisPages = Math.ceil(averageDurations.length / ITEMS_PER_PAGE);
+
+  // Calculate pagination for parallel processing
+  const parallelProcessingStart = (parallelProcessingPage - 1) * ITEMS_PER_PAGE;
+  const parallelProcessingEnd = parallelProcessingStart + ITEMS_PER_PAGE;
+  const paginatedParallelPeriods = parallelPeriods.slice(parallelProcessingStart, parallelProcessingEnd);
+  const totalParallelProcessingPages = Math.ceil(parallelPeriods.length / ITEMS_PER_PAGE);
+
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-7xl mx-auto">
@@ -301,182 +335,282 @@ export default function MetricsPage() {
             <p className="text-gray-600">There are no metrics to display for the selected version.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Step Duration Chart */}
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h2 className="text-xl font-semibold mb-4">Step Durations</h2>
-              <Bar
-                data={chartData}
-                options={{
-                  responsive: true,
-                  plugins: {
-                    legend: {
-                      position: 'top',
-                    },
-                    title: {
-                      display: true,
-                      text: 'Average and Max Duration by Step',
-                    },
-                  },
-                }}
-              />
-            </div>
+          <Tabs defaultValue="overview" className="space-y-4">
+            <TabsList>
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="step-analysis">Step Analysis</TabsTrigger>
+              <TabsTrigger value="parallel-processing">Parallel Processing</TabsTrigger>
+            </TabsList>
 
-            {/* Resource Usage Chart */}
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h2 className="text-xl font-semibold mb-4">Memory Usage per Video</h2>
-              <Line
-                data={{
-                  labels: resourceMetrics.map(m => m.id),
-                  datasets: [
-                    {
-                      label: 'Memory (MB)',
-                      data: resourceMetrics.map(m => m.totalMemory),
-                      borderColor: 'rgb(75, 192, 192)',
-                      tension: 0.1,
-                    }
-                  ],
-                }}
-                options={{
-                  responsive: true,
-                  plugins: {
-                    legend: {
-                      position: 'top',
-                    },
-                    title: {
-                      display: true,
-                      text: 'Memory Usage per Video',
-                    },
-                  },
-                }}
-              />
-            </div>
+            <TabsContent value="overview" className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Step Duration Chart */}
+                <div className="bg-white p-6 rounded-lg shadow">
+                  <h2 className="text-xl font-semibold mb-4">Step Durations</h2>
+                  <Bar
+                    data={chartData}
+                    options={{
+                      responsive: true,
+                      plugins: {
+                        legend: {
+                          position: 'top',
+                        },
+                        title: {
+                          display: true,
+                          text: 'Average and Max Duration by Step',
+                        },
+                      },
+                    }}
+                  />
+                </div>
 
-            {/* Generation Time vs. Video Duration Scatter Plot */}
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h2 className="text-xl font-semibold mb-4">Tempo de Geração vs. Duração do Vídeo</h2>
-              <Scatter
-                data={{
-                  datasets: [
-                    {
-                      label: 'Vídeos',
-                      data: generationVsDurationData,
-                      backgroundColor: 'rgba(75, 192, 192, 0.6)',
-                      borderColor: 'rgba(75, 192, 192, 1)',
-                    },
-                  ],
-                }}
-                options={{
-                  responsive: true,
-                  plugins: {
-                    legend: {
-                      position: 'top',
-                    },
-                    tooltip: {
-                      callbacks: {
-                        label: function(context) {
-                          const dataPoint = context.raw;
-                          return `ID: ${dataPoint.id}, Geração: ${dataPoint.x.toFixed(2)}s, Duração: ${dataPoint.y.toFixed(2)}s`;
+                {/* Memory Usage Chart */}
+                <div className="bg-white p-6 rounded-lg shadow">
+                  <h2 className="text-xl font-semibold mb-4">Memory Usage per Video</h2>
+                  <Line
+                    data={{
+                      labels: resourceMetrics.map(m => m.id),
+                      datasets: [
+                        {
+                          label: 'Memory (MB)',
+                          data: resourceMetrics.map(m => m.totalMemory),
+                          borderColor: 'rgb(75, 192, 192)',
+                          tension: 0.1,
                         }
-                      }
-                    },
-                    title: {
-                      display: true,
-                      text: 'Tempo Total de Geração vs. Duração do Vídeo',
-                    },
-                  },
-                  scales: {
-                    x: {
-                      type: 'linear',
-                      position: 'bottom',
-                      title: {
-                        display: true,
-                        text: 'Tempo Total de Geração (segundos)',
+                      ],
+                    }}
+                    options={{
+                      responsive: true,
+                      plugins: {
+                        legend: {
+                          position: 'top',
+                        },
+                        title: {
+                          display: true,
+                          text: 'Memory Usage per Video',
+                        },
                       },
-                    },
-                    y: {
-                      type: 'linear',
-                      title: {
-                        display: true,
-                        text: 'Duração do Vídeo (segundos)',
-                      },
-                    },
-                  },
-                }}
-              />
-            </div>
+                    }}
+                  />
+                </div>
 
-            {/* Parallel Processing Analysis */}
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h2 className="text-xl font-semibold mb-4">Parallel Processing Analysis</h2>
-              <div className="space-y-4">
+                {/* Generation Time vs. Video Duration Scatter Plot */}
+                <div className="bg-white p-6 rounded-lg shadow">
+                  <h2 className="text-xl font-semibold mb-4">Tempo de Geração vs. Duração do Vídeo</h2>
+                  <Scatter
+                    data={{
+                      datasets: [
+                        {
+                          label: 'Vídeos',
+                          data: generationVsDurationData,
+                          backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                          borderColor: 'rgba(75, 192, 192, 1)',
+                        },
+                      ],
+                    }}
+                    options={{
+                      responsive: true,
+                      plugins: {
+                        legend: {
+                          position: 'top',
+                        },
+                        tooltip: {
+                          callbacks: {
+                            label: function(context) {
+                              const dataPoint = context.raw;
+                              return `ID: ${dataPoint.id}, Geração: ${dataPoint.x.toFixed(2)}s, Duração: ${dataPoint.y.toFixed(2)}s`;
+                            }
+                          }
+                        },
+                        title: {
+                          display: true,
+                          text: 'Tempo Total de Geração vs. Duração do Vídeo',
+                        },
+                      },
+                      scales: {
+                        x: {
+                          type: 'linear',
+                          position: 'bottom',
+                          title: {
+                            display: true,
+                            text: 'Tempo Total de Geração (segundos)',
+                          },
+                        },
+                        y: {
+                          type: 'linear',
+                          title: {
+                            display: true,
+                            text: 'Duração do Vídeo (segundos)',
+                          },
+                        },
+                      },
+                    }}
+                  />
+                </div>
+
+                {/* Summary Statistics */}
+                <div className="bg-white p-6 rounded-lg shadow">
+                  <h2 className="text-xl font-semibold mb-4">Summary Statistics</h2>
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-gray-600">Total Videos Generated</p>
+                      <p className="text-2xl font-bold">{filteredMetrics.length}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-600">Average Total Generation Time</p>
+                      <p className="text-2xl font-bold">
+                        {filteredMetrics.length > 0
+                          ? (filteredMetrics.reduce((acc, m) => 
+                              acc + (m.steps?.reduce((sum, step) => sum + (step.duration_sec || 0), 0) || 0), 0) / filteredMetrics.length
+                            ).toFixed(2)
+                          : 0} seconds
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-600">Average Memory per Video</p>
+                      <p className="text-2xl font-bold">
+                        {(resourceMetrics.reduce((acc, m) => acc + m.totalMemory, 0) / resourceMetrics.length).toFixed(2)} MB
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-600">Maximum Parallel Videos</p>
+                      <p className="text-2xl font-bold">
+                        {parallelPeriods.length > 0 ? Math.max(...parallelPeriods.map(p => p.videos.length)) : 0}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-600">Video Generation Speed</p>
+                      <p className="text-2xl font-bold">
+                        {filteredMetrics.length > 0
+                          ? (filteredMetrics.reduce((acc, m) => {
+                              const totalDuration = m.steps?.reduce((sum, step) => sum + (step.duration_sec || 0), 0) || 0;
+                              const videoDuration = m.steps?.find(step => step.final_video_duration_sec)?.final_video_duration_sec || 0;
+                              return acc + (videoDuration / totalDuration);
+                            }, 0) / filteredMetrics.length).toFixed(2)
+                          : 0} seconds of video per second
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="step-analysis">
+              <div className="bg-white p-6 rounded-lg shadow">
+                <h2 className="text-xl font-semibold mb-4">Step Analysis</h2>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Step</TableHead>
+                      <TableHead className="text-right">Average Duration (s)</TableHead>
+                      <TableHead className="text-right">Max Duration (s)</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedStepAnalysis.map(({ step, average, max }) => (
+                      <TableRow key={step}>
+                        <TableCell className="font-medium">{step}</TableCell>
+                        <TableCell className="text-right">{average.toFixed(2)}</TableCell>
+                        <TableCell className="text-right">{max.toFixed(2)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+                <div className="mt-4">
+                  <Pagination>
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious 
+                          onClick={() => setStepAnalysisPage(p => Math.max(1, p - 1))}
+                          className={stepAnalysisPage === 1 ? 'pointer-events-none opacity-50' : ''}
+                        />
+                      </PaginationItem>
+                      {Array.from({ length: totalStepAnalysisPages }, (_, i) => i + 1).map((page) => (
+                        <PaginationItem key={page}>
+                          <PaginationLink
+                            onClick={() => setStepAnalysisPage(page)}
+                            isActive={page === stepAnalysisPage}
+                          >
+                            {page}
+                          </PaginationLink>
+                        </PaginationItem>
+                      ))}
+                      <PaginationItem>
+                        <PaginationNext 
+                          onClick={() => setStepAnalysisPage(p => Math.min(totalStepAnalysisPages, p + 1))}
+                          className={stepAnalysisPage === totalStepAnalysisPages ? 'pointer-events-none opacity-50' : ''}
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="parallel-processing">
+              <div className="bg-white p-6 rounded-lg shadow">
+                <h2 className="text-xl font-semibold mb-4">Parallel Processing Analysis</h2>
                 {parallelPeriods.length === 0 ? (
                   <p className="text-gray-600">No parallel processing periods to display for the selected version.</p>
                 ) : (
-                  parallelPeriods.map((period, index) => (
-                    <div key={index} className="border-b pb-4">
-                      <p className="font-semibold">Period {index + 1}</p>
-                      <p className="text-sm text-gray-600">
-                        Start: {period.start.toLocaleString()}<br />
-                        End: {period.end.toLocaleString()}<br />
-                        Videos in parallel: {period.videos.length}<br />
-                        Total memory used: {period.totalMemory.toFixed(2)} MB<br />
-                        Average memory per video: {(period.totalMemory / period.videos.length).toFixed(2)} MB
-                      </p>
+                  <>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Period</TableHead>
+                          <TableHead>Start Time</TableHead>
+                          <TableHead>End Time</TableHead>
+                          <TableHead className="text-right">Videos in Parallel</TableHead>
+                          <TableHead className="text-right">Total Memory (MB)</TableHead>
+                          <TableHead className="text-right">Avg Memory per Video (MB)</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {paginatedParallelPeriods.map((period, index) => (
+                          <TableRow key={index}>
+                            <TableCell className="font-medium">Period {index + 1}</TableCell>
+                            <TableCell>{period.start.toLocaleString()}</TableCell>
+                            <TableCell>{period.end.toLocaleString()}</TableCell>
+                            <TableCell className="text-right">{period.videos.length}</TableCell>
+                            <TableCell className="text-right">{period.totalMemory.toFixed(2)}</TableCell>
+                            <TableCell className="text-right">{(period.totalMemory / period.videos.length).toFixed(2)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                    <div className="mt-4">
+                      <Pagination>
+                        <PaginationContent>
+                          <PaginationItem>
+                            <PaginationPrevious 
+                              onClick={() => setParallelProcessingPage(p => Math.max(1, p - 1))}
+                              className={parallelProcessingPage === 1 ? 'pointer-events-none opacity-50' : ''}
+                            />
+                          </PaginationItem>
+                          {Array.from({ length: totalParallelProcessingPages }, (_, i) => i + 1).map((page) => (
+                            <PaginationItem key={page}>
+                              <PaginationLink
+                                onClick={() => setParallelProcessingPage(page)}
+                                isActive={page === parallelProcessingPage}
+                              >
+                                {page}
+                              </PaginationLink>
+                            </PaginationItem>
+                          ))}
+                          <PaginationItem>
+                            <PaginationNext 
+                              onClick={() => setParallelProcessingPage(p => Math.min(totalParallelProcessingPages, p + 1))}
+                              className={parallelProcessingPage === totalParallelProcessingPages ? 'pointer-events-none opacity-50' : ''}
+                            />
+                          </PaginationItem>
+                        </PaginationContent>
+                      </Pagination>
                     </div>
-                  ))
+                  </>
                 )}
               </div>
-            </div>
-
-            {/* Summary Statistics */}
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h2 className="text-xl font-semibold mb-4">Summary Statistics</h2>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-gray-600">Total Videos Generated</p>
-                  <p className="text-2xl font-bold">{filteredMetrics.length}</p>
-                </div>
-                <div>
-                  <p className="text-gray-600">Average Total Generation Time</p>
-                  <p className="text-2xl font-bold">
-                    {filteredMetrics.length > 0
-                      ? (filteredMetrics.reduce((acc, m) => 
-                          acc + (m.steps?.reduce((sum, step) => sum + (step.duration_sec || 0), 0) || 0), 0) / filteredMetrics.length
-                        ).toFixed(2)
-                      : 0} seconds
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-600">Average Memory per Video</p>
-                  <p className="text-2xl font-bold">
-                    {(resourceMetrics.reduce((acc, m) => acc + m.totalMemory, 0) / resourceMetrics.length).toFixed(2)} MB
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-600">Maximum Parallel Videos</p>
-                  <p className="text-2xl font-bold">
-                    {parallelPeriods.length > 0 ? Math.max(...parallelPeriods.map(p => p.videos.length)) : 0}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Step Analysis */}
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h2 className="text-xl font-semibold mb-4">Step Analysis</h2>
-              <div className="space-y-4">
-                {averageDurations.map(({ step, average, max }) => (
-                  <div key={step} className="border-b pb-2">
-                    <p className="font-semibold">{step}</p>
-                    <p className="text-sm text-gray-600">
-                      Avg: {average.toFixed(2)}s | Max: {max.toFixed(2)}s
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+            </TabsContent>
+          </Tabs>
         )}
       </div>
     </div>
